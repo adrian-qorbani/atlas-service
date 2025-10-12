@@ -1,0 +1,2 @@
+## Atlas-Service
+a production-grade Go web service, built from scratch for real-world service architecture, domain-driven design, observability and K8s deployment principles. Built based on Ardan Labs' Software Design with Kubernetes guidance.
