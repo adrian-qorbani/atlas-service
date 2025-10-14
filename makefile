@@ -1,6 +1,6 @@
 # debug
 run:
-	go run apis/services/sales/main.go | go run apis/tooling/logfmt/main.go
+	go run api/services/sales/main.go | go run api/tooling/logfmt/main.go
 
 # Define dependencies
 
@@ -26,11 +26,25 @@ AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
 
 # VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
+# ==============================================================================
+# building containers
+
+build: sales
+
+sales:
+	docker build \
+		-f zarf/docker/dockerfile.sales \
+		-t $(SALES_IMAGE) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+		.
+# ==============================================================================
 # module support
 tidy:
 	go mod tidy
 	go mod vendor
 
+# ==============================================================================
 # running from within k8s/kind
 dev-up:
 	kind create cluster \
