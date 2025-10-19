@@ -2,6 +2,12 @@
 run:
 	go run api/services/sales/main.go | go run api/tooling/logfmt/main.go
 
+help:
+	go run api/services/sales/main.go --help
+
+version:
+	go run api/services/sales/main.go --version
+
 # Define dependencies
 
 GOLANG          := golang:1.25.1
