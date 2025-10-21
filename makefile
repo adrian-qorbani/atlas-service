@@ -86,6 +86,10 @@ dev-up:
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
+dev-recreate:
+	kind delete cluster --name $(KIND_CLUSTER) || true
+	make dev-up dev-load dev-apply
+
 dev-status-all:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
