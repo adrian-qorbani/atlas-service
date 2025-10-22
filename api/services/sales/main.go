@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/adrian-qorbani/atlas-service/api/services/api/debug"
+	"github.com/adrian-qorbani/atlas-service/api/services/sales/mux"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/ardanlabs/conf/v3"
 )
@@ -114,7 +115,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      nil,
+		Handler:      mux.WebAPI(),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,
