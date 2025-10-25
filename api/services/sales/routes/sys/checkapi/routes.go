@@ -1,11 +1,11 @@
 package checkapi
 
 import (
-	"net/http"
+	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
 
-func Routes(m *http.ServeMux) {
+func Routes(app *web.App) {
 
-	m.HandleFunc("GET /liveness", liveness)
-	m.HandleFunc("GET /liveness", readiness)
+	app.HandleFunc("GET /liveness", liveness)
+	app.HandleFunc("GET /liveness", readiness)
 }
