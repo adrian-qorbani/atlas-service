@@ -8,6 +8,10 @@ help:
 version:
 	go run api/services/sales/main.go --version
 
+# temp
+curl-test-api:
+	curl -il -H GET http://localhost:3000/test
+
 # Define dependencies
 
 GOLANG          := golang:1.25.1
@@ -118,6 +122,9 @@ dev-update-apply: build dev-load dev-apply
 
 dev-logs:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/tooling/logfmt/main.go -service=$(SALES_APP)
+
+dev-logs-verbose:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
 
 # ==============================================================================
 
