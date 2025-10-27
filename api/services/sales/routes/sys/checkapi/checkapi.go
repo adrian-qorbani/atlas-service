@@ -21,10 +21,10 @@ func (s status) Encode() ([]byte, string, error) {
 
 func liveness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	resp := status{Status: "OK"}
-	return web.Respond(ctx, w, resp)
+	return web.Respond(ctx, w, resp, http.StatusOK)
 }
 
 func readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	resp := status{Status: "OK"}
-	return web.Respond(ctx, w, resp)
+	return web.Respond(ctx, w, resp, http.StatusOK)
 }
