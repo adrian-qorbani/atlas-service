@@ -15,6 +15,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/api/services/api/debug"
 	"github.com/adrian-qorbani/atlas-service/api/services/sales/mux"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
+	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/ardanlabs/conf/v3"
 )
 
@@ -30,8 +31,8 @@ func main() {
 	}
 
 	traceIDFn := func(ctx context.Context) string {
-		// return web.getTraceID(ctx)
-		return ""
+		return web.GetTraceID(ctx)
+		// return ""
 	}
 
 	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES", traceIDFn, events)
@@ -115,7 +116,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      mux.WebAPI(shutdown),
+		Handler:      mux.WebAPI(log, shutdown),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,

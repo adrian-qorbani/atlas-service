@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 // Encoder defines behavior that can encode a data model and provide
@@ -40,7 +43,13 @@ func (a *App) HandleFunc(pattern string, handlerFunc HandlerFunc, mw ...MidFunc)
 	handlerFunc = wrapMiddleware(a.mw, handlerFunc)
 
 	h := func(w http.ResponseWriter, r *http.Request) {
-		if err := handlerFunc(r.Context(), w, r); err != nil {
+		v := Values{
+			TraceID: uuid.NewString(),
+			Now:     time.Now().UTC(),
+		}
+		ctx := setValues(r.Context(), &v)
+
+		if err := handlerFunc(ctx, w, r); err != nil {
 			// to be error handled proper
 			fmt.Println(err)
 			return
