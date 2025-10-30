@@ -3,7 +3,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -20,8 +19,13 @@ type Encoder interface {
 // HandlerFunc represents a function that handles a http request within our own framework
 type HandlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
 
+// Logger represents a function that will be called to add information
+// to the logs.
+type Logger func(ctx context.Context, msg string, v ...any)
+
 // App is entry point to our app and what configs our context
 type App struct {
+	log Logger
 	*http.ServeMux
 	shutdown chan os.Signal
 	mw       []MidFunc
@@ -50,8 +54,7 @@ func (a *App) HandleFunc(pattern string, handlerFunc HandlerFunc, mw ...MidFunc)
 		ctx := setValues(r.Context(), &v)
 
 		if err := handlerFunc(ctx, w, r); err != nil {
-			// to be error handled proper
-			fmt.Println(err)
+			a.log(ctx, "web", "ERROR", err)
 			return
 		}
 	}
