@@ -10,7 +10,7 @@ import (
 )
 
 func WebAPI(log *logger.Logger, shutdown chan os.Signal) *web.App {
-	m := web.NewApp(shutdown, middleware.Logger(log))
+	m := web.NewApp(shutdown, middleware.Logger(log), middleware.Errors(log))
 	checkapi.Routes(m)
 
 	return m

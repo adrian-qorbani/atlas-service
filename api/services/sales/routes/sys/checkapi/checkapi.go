@@ -4,8 +4,10 @@ package checkapi
 import (
 	"context"
 	"encoding/json"
+	"math/rand"
 	"net/http"
 
+	"github.com/adrian-qorbani/atlas-service/app/api/errs"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
 
@@ -25,6 +27,15 @@ func liveness(ctx context.Context, w http.ResponseWriter, req *http.Request) err
 }
 
 func readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	resp := status{Status: "OK"}
+	return web.Respond(ctx, w, resp, http.StatusOK)
+}
+
+// temp test
+func testerror(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	if n := rand.Intn(100); n%2 == 0 {
+		return errs.Newf(errs.FailedPrecondition, "this msg is trusted.")
+	}
 	resp := status{Status: "OK"}
 	return web.Respond(ctx, w, resp, http.StatusOK)
 }
