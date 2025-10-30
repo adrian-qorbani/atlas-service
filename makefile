@@ -12,6 +12,15 @@ version:
 curl-test-api:
 	curl -il -H GET http://localhost:3000/test
 
+curl-liveness:
+	curl -il -H GET http://localhost:3000/liveness
+
+curl-readiness:
+	curl -il -H GET http://localhost:3000/readiness
+
+curl-test-error:
+	curl -il -H GET http://localhost:3000/testerror
+
 # Define dependencies
 
 GOLANG          := golang:1.25.1
@@ -125,6 +134,12 @@ dev-logs:
 
 dev-logs-verbose:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
+
+dev-get-svc:
+	kubectl get svc -n $(NAMESPACE) -o wide
+
+dev-forward-port:
+	kubectl port-forward -n $(NAMESPACE) svc/$(NAMESPACE) 3000:3000
 
 # ==============================================================================
 
