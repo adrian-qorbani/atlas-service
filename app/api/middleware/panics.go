@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+
+	"github.com/adrian-qorbani/atlas-service/app/api/metrics"
 )
 
 // Panics recover from panics and convert them to an error so it'll be reported in Metrics and
@@ -17,7 +19,7 @@ func Panics(ctx context.Context, handler Handler) (err error) {
 			trace := debug.Stack()
 			err = fmt.Errorf("PANIC [%v] TRACE [%s]", rec, string(trace))
 
-			// to-do add metrics
+			metrics.AddPanics(ctx)
 		}
 	}()
 
