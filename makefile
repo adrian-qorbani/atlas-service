@@ -21,6 +21,9 @@ curl-readiness:
 curl-test-error:
 	curl -il -H GET http://localhost:3000/testerror
 
+curl-test-panic:
+	curl -il -H GET http://localhost:3000/testpanic
+
 # Define dependencies
 
 GOLANG          := golang:1.25.1
