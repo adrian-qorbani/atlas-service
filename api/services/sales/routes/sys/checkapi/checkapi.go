@@ -32,9 +32,17 @@ func readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) er
 }
 
 // temp test
-func testerror(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+func testError(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	if n := rand.Intn(100); n%2 == 0 {
 		return errs.Newf(errs.FailedPrecondition, "this msg is trusted.")
+	}
+	resp := status{Status: "OK"}
+	return web.Respond(ctx, w, resp, http.StatusOK)
+}
+
+func testPanic(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	if n := rand.Intn(100); n%2 == 0 {
+		panic("PANICKING!!!!!")
 	}
 	resp := status{Status: "OK"}
 	return web.Respond(ctx, w, resp, http.StatusOK)
