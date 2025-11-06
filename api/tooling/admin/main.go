@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	_ "embed"
 	"encoding/pem"
 	"fmt"
 	"log"
@@ -11,6 +14,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/open-policy-agent/opa/rego"
 )
 
 func main() {
@@ -19,6 +23,9 @@ func main() {
 		log.Fatalln(err)
 	}
 }
+
+//go:embed rego/authentication.rego
+var opaAuthentication string
 
 // GenToken generates a JWT for the specified user.
 func GenToken() error {
@@ -68,7 +75,7 @@ func GenToken() error {
 
 	fmt.Printf("-----BEGIN TOKEN-----\n%s\n-----END TOKEN-----\n", str)
 
-	// ----------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------------------
 
 	// Marshal the public key from the private key to PKIX.
 	asn1Bytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
@@ -86,6 +93,46 @@ func GenToken() error {
 	if err := pem.Encode(os.Stdout, &publicBlock); err != nil {
 		return fmt.Errorf("encoding to public file: %w", err)
 	}
+
+	var b bytes.Buffer
+	if err := pem.Encode(&b, &publicBlock); err != nil {
+		return fmt.Errorf("encoding to public file: %w", err)
+	}
+
+	// --------------------------------------------------------------------------------------------------------------
+
+	ctx := context.Background()
+	query := fmt.Sprintf("x = data.%s.%s", "atlas.rego", "auth")
+
+	q, err := rego.New(
+		rego.Query(query),
+		rego.Module("policy.rego", opaAuthentication),
+	).PrepareForEval(ctx)
+	if err != nil {
+		return fmt.Errorf("OPA prepare for eval failed: %w", err)
+	}
+
+	input := map[string]any{
+		"Key":   b.String(),
+		"Token": str,
+		"ISS":   "service project",
+	}
+
+	results, err := q.Eval(ctx, rego.EvalInput(input))
+	if err != nil {
+		return fmt.Errorf("OPA eval failed for rule: %w", err)
+	}
+
+	if len(results) == 0 {
+		return fmt.Errorf("%w: OPA policy evaluation yielded no results", err)
+	}
+
+	result, ok := results[0].Bindings["x"].(bool)
+	if !ok || !result {
+		return fmt.Errorf("[%w]: OPA policy rule [%q] not satisfied", results, ok)
+	}
+
+	fmt.Printf("token validated!")
 
 	return nil
 }
@@ -142,5 +189,6 @@ func GenKey() error {
 	}
 
 	fmt.Println("private and public key files generated")
+
 	return nil
 }
