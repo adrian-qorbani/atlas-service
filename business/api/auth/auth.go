@@ -11,6 +11,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/open-policy-agent/opa/rego"
 )
 
@@ -135,13 +136,29 @@ func (a *Auth) Authenticate(ctx context.Context, bearerToken string) (Claims, er
 		return Claims{}, fmt.Errorf("authentication failed : %w", err)
 	}
 
-	// Check the database for this user to verify they are still enabled. to-do.
+	// Check the database for this user to verify they are still enabled.
+
+	// if err := a.isUserEnabled(ctx, claims); err != nil {
+	// 	return Claims{}, fmt.Errorf("user not enabled : %w", err)
+	// }
 
 	return claims, nil
 }
 
-func (a *Auth) Authorize() error {
-	// to-do
+// Authorize attempts to authorize the user with the provided input roles, if
+// none of the input roles are within the user's claims, we return an error
+// otherwise the user is authorized.
+func (a *Auth) Authorize(ctx context.Context, claims Claims, userID uuid.UUID, rule string) error {
+	input := map[string]any{
+		"Roles":   claims.Roles,
+		"Subject": claims.Subject,
+		"UserID":  userID,
+	}
+
+	if err := a.opaPolicyEvaluation(ctx, regoAuthorization, rule, input); err != nil {
+		return fmt.Errorf("rego evaluation failed : %w", err)
+	}
+
 	return nil
 }
 
@@ -174,3 +191,10 @@ func (a *Auth) opaPolicyEvaluation(ctx context.Context, regoScript string, rule 
 
 	return nil
 }
+
+// isUserEnabled hits the database and checks the user is not disabled. If the
+// no database connection was provided, this check is skipped.
+// func (a *Auth) isUserEnabled() error {
+
+// 	return nil
+// }
