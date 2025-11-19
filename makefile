@@ -74,7 +74,7 @@ dev-docker:
 # ==============================================================================
 # building containers
 
-build: sales
+build: sales auth
 
 sales:
 	docker build \
@@ -83,6 +83,15 @@ sales:
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
 		.
+
+auth:
+	docker build \
+		-f zarf/docker/dockerfile.auth \
+		-t $(AUTH_IMAGE) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+		.
+
 # ==============================================================================
 # module support
 tidy:
@@ -118,12 +127,17 @@ dev-status:
 
 dev-load:
 	kind load docker-image $(SALES_IMAGE) --name $(KIND_CLUSTER)
+	kind load docker-image $(AUTH_IMAGE) --name $(KIND_CLUSTER) 
 
 dev-apply:
+	kustomize build zarf/k8s/dev/auth | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(AUTH_APP) --timeout=120s --for=condition=Ready
+
 	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(SALES_APP) --timeout=120s --for=condition=Ready
 
 dev-restart:
+	kubectl rollout restart deployment $(AUTH_APP) --namespace=$(NAMESPACE)
 	kubectl rollout restart deployment $(SALES_APP) --namespace=$(NAMESPACE)
 
 dev-run: build dev-up dev-load dev-apply
@@ -132,11 +146,17 @@ dev-update: build dev-load dev-restart
 
 dev-update-apply: build dev-load dev-apply
 
-dev-logs:
+dev-logs-sales:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/tooling/logfmt/main.go -service=$(SALES_APP)
 
-dev-logs-verbose:
+dev-logs-sales-verbose:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
+
+dev-logs-auth:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(AUTH_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/tooling/logfmt/main.go -service=$(AUTH_APP)
+
+dev-logs-auth-verbose:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(AUTH_APP) --all-containers=true -f --tail=100 --max-log-requests=6
 
 dev-get-svc:
 	kubectl get svc -n $(NAMESPACE) -o wide
@@ -151,6 +171,9 @@ dev-describe-deployment:
 
 dev-describe-sales:
 	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(SALES_APP)
+
+dev-describe-auth:
+	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(AUTH_APP)
 
 # ==============================================================================
 # Metrics and Tracing
@@ -202,3 +225,11 @@ admin-pvt-key:
 curl-auth:
 	curl -il \
 	-H "Authorization: Bearer ${TOKEN}" "http://localhost:3000/testauth"
+
+token:
+	curl -il \
+	--user "admin@example.com:gophers" http://localhost:6000/auth/token/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
+
+curl-auth2:
+	curl -il \
+	-H "Authorization: Bearer ${TOKEN}" "http://localhost:6000/auth/authenticate"
