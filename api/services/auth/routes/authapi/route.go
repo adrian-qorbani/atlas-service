@@ -14,6 +14,6 @@ func Routes(app *web.App, a *auth.Auth) {
 	api := newAPI(a)
 	app.HandleFunc("GET /auth/token/{kid}", api.token, authen)
 	app.HandleFunc("GET /auth/authenticate", api.authenticate, authen)
-	app.HandleFunc("GET /auth/token/{kid}", api.token, authen)
+	app.HandleFunc("POST /auth/authorize", api.authorize)
 
 }
