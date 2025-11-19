@@ -3,12 +3,12 @@ package checkapi
 
 import (
 	"context"
-	"encoding/json"
 	"math/rand"
 	"net/http"
 
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
+	"github.com/go-json-experiment/json"
 )
 
 // temp
