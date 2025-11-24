@@ -6,11 +6,26 @@ import (
 	"strings"
 	"time"
 
+	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
 	"github.com/adrian-qorbani/atlas-service/business/api/auth"
+	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
+
+// Authenticate validates authentication via the auth service.
+func Authenticate(ctx context.Context, log *logger.Logger, client *authclient.Client, authorization string, handler Handler) error {
+	resp, err := client.Authenticate(ctx, authorization)
+	if err != nil {
+		return errs.New(errs.Unauthenticated, err)
+	}
+
+	ctx = setUserID(ctx, resp.UserID)
+	ctx = setClaims(ctx, resp.Claims)
+
+	return handler(ctx)
+}
 
 // Authorization validates a JWT from 'Authorization' header
 func Authorization(ctx context.Context, auth *auth.Auth, authorization string, handler Handler) error {

@@ -5,15 +5,15 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/api/services/api/middleware"
 	"github.com/adrian-qorbani/atlas-service/api/services/sales/routes/sys/checkapi"
-	"github.com/adrian-qorbani/atlas-service/business/api/auth"
+	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
 
 // WebAPI constructs a http.Handler with all application routes bound.
-func WebAPI(log *logger.Logger, auth *auth.Auth, shutdown chan os.Signal) *web.App {
+func WebAPI(log *logger.Logger, authClient *authclient.Client, shutdown chan os.Signal) *web.App {
 	app := web.NewApp(shutdown, middleware.Logger(log), middleware.Errors(log), middleware.Metrics(), middleware.Panics())
-	checkapi.Routes(app, auth)
+	checkapi.Routes(app, log, authClient)
 
 	return app
 }

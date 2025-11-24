@@ -9,7 +9,7 @@ import (
 
 // Routes adds specific routes for this group.
 func Routes(app *web.App, a *auth.Auth) {
-	authen := middleware.Authenticate(a)
+	authen := middleware.Authorization(a)
 
 	api := newAPI(a)
 	app.HandleFunc("GET /auth/token/{kid}", api.token, authen)
