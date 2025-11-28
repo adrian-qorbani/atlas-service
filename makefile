@@ -108,6 +108,8 @@ dev-up:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
+	kind load docker-image ${POSTGRES} --name $(KIND_CLUSTER)
+
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
@@ -125,6 +127,9 @@ dev-status:
 
 # ==============================================================================
 
+dev-load-db:
+	kind load docker-image ${POSTGRES} --name $(KIND_CLUSTER)
+	
 dev-load:
 	kind load docker-image $(SALES_IMAGE) --name $(KIND_CLUSTER)
 	kind load docker-image $(AUTH_IMAGE) --name $(KIND_CLUSTER) 
