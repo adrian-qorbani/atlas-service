@@ -9,6 +9,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/go-json-experiment/json"
+	"github.com/jmoiron/sqlx"
 )
 
 // temp
@@ -16,23 +17,33 @@ type status struct {
 	Status string
 }
 
+type api struct {
+	db *sqlx.DB
+}
+
+func newAPI(db *sqlx.DB) *api {
+	return &api{
+		db: db,
+	}
+
+}
+
 func (s status) Encode() ([]byte, string, error) {
 	data, err := json.Marshal(s)
 	return data, "application/json", err
 }
 
-func liveness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+func (api *api) liveness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	resp := status{Status: "OK"}
 	return web.Respond(ctx, w, resp, http.StatusOK)
 }
 
-func readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+func (api *api) readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	resp := status{Status: "OK"}
 	return web.Respond(ctx, w, resp, http.StatusOK)
 }
 
-// temp test
-func testError(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+func (api *api) testError(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	if n := rand.Intn(100); n%2 == 0 {
 		return errs.Newf(errs.FailedPrecondition, "this msg is trusted.")
 	}
@@ -40,7 +51,7 @@ func testError(ctx context.Context, w http.ResponseWriter, req *http.Request) er
 	return web.Respond(ctx, w, resp, http.StatusOK)
 }
 
-func testPanic(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+func (api *api) testPanic(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
 	if n := rand.Intn(100); n%2 == 0 {
 		panic("PANICKING!!!!!")
 	}
