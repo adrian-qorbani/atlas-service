@@ -93,6 +93,12 @@ auth:
 		.
 
 # ==============================================================================
+# Administration
+
+pgcli:
+	pgcli postgresql://postgres:postgres@localhost
+
+# ==============================================================================
 # module support
 tidy:
 	go mod tidy
