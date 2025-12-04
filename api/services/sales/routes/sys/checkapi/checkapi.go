@@ -5,8 +5,13 @@ import (
 	"context"
 	"math/rand"
 	"net/http"
+	"os"
+	"runtime"
+	"time"
 
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
+	"github.com/adrian-qorbani/atlas-service/business/sqldb"
+	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/go-json-experiment/json"
 	"github.com/jmoiron/sqlx"
@@ -18,12 +23,16 @@ type status struct {
 }
 
 type api struct {
-	db *sqlx.DB
+	build string
+	log   *logger.Logger
+	db    *sqlx.DB
 }
 
-func newAPI(db *sqlx.DB) *api {
+func newAPI(build string, log *logger.Logger, db *sqlx.DB) *api {
 	return &api{
-		db: db,
+		build: build,
+		log:   log,
+		db:    db,
 	}
 
 }
@@ -33,14 +42,61 @@ func (s status) Encode() ([]byte, string, error) {
 	return data, "application/json", err
 }
 
-func (api *api) liveness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
-	resp := status{Status: "OK"}
-	return web.Respond(ctx, w, resp, http.StatusOK)
+// readiness checks if the database is ready and if not will return a 500 status.
+// Do not respond by just returning an error because further up in the call
+// stack it will interpret that as a non-trusted error.
+func (api *api) readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	status := "ok"
+	statusCode := http.StatusOK
+
+	if err := sqldb.StatusCheck(ctx, api.db); err != nil {
+		status = "db not ready"
+		statusCode = http.StatusInternalServerError
+		api.log.Info(ctx, "readiness failure", "status", status)
+	}
+
+	data := struct {
+		Status string `json:"status"`
+	}{
+		Status: status,
+	}
+
+	return web.Respond(ctx, w, data, statusCode)
 }
 
-func (api *api) readiness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
-	resp := status{Status: "OK"}
-	return web.Respond(ctx, w, resp, http.StatusOK)
+func (api *api) liveness(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
+	// resp := status{Status: "OK"}
+	// return web.Respond(ctx, w, resp, http.StatusOK)
+	host, err := os.Hostname()
+	if err != nil {
+		host = "unavailable"
+	}
+
+	data := struct {
+		Status     string `json:"status,omitempty"`
+		Build      string `json:"build,omitempty"`
+		Host       string `json:"host,omitempty"`
+		Name       string `json:"name,omitempty"`
+		PodIP      string `json:"podIP,omitempty"`
+		Node       string `json:"node,omitempty"`
+		Namespace  string `json:"namespace,omitempty"`
+		GOMAXPROCS int    `json:"GOMAXPROCS,omitempty"`
+	}{
+		Status:     "up",
+		Build:      api.build,
+		Host:       host,
+		Name:       os.Getenv("KUBERNETES_NAME"),
+		PodIP:      os.Getenv("KUBERNETES_POD_IP"),
+		Node:       os.Getenv("KUBERNETES_NODE_NAME"),
+		Namespace:  os.Getenv("KUBERNETES_NAMESPACE"),
+		GOMAXPROCS: runtime.GOMAXPROCS(0),
+	}
+
+	// this handler provides a free timer loop
+	return web.Respond(ctx, w, data, http.StatusOK)
 }
 
 func (api *api) testError(ctx context.Context, w http.ResponseWriter, req *http.Request) error {

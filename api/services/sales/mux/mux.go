@@ -12,9 +12,9 @@ import (
 )
 
 // WebAPI constructs a http.Handler with all application routes bound.
-func WebAPI(log *logger.Logger, db *sqlx.DB, authClient *authclient.Client, shutdown chan os.Signal) *web.App {
+func WebAPI(build string, log *logger.Logger, db *sqlx.DB, authClient *authclient.Client, shutdown chan os.Signal) *web.App {
 	app := web.NewApp(shutdown, middleware.Logger(log), middleware.Errors(log), middleware.Metrics(), middleware.Panics())
-	checkapi.Routes(app, log, db, authClient)
+	checkapi.Routes(build, app, log, db, authClient)
 
 	return app
 }

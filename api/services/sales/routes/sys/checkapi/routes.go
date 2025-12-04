@@ -9,12 +9,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Routes(app *web.App, log *logger.Logger, db *sqlx.DB, authClient *authclient.Client) {
+func Routes(build string, app *web.App, log *logger.Logger, db *sqlx.DB, authClient *authclient.Client) {
 
 	authen := middleware.Authenticate(log, authClient)
 	athAdminOnly := middleware.Authorize(log, authClient, auth.RuleAdminOnly)
 
-	api := newAPI(db)
+	api := newAPI(build, log, db)
 	app.HandleFuncNoMiddleware("GET /liveness", api.liveness)
 	app.HandleFuncNoMiddleware("GET /readiness", api.readiness)
 	app.HandleFunc("GET /testerror", api.testError)
