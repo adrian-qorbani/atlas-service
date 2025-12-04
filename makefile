@@ -172,11 +172,17 @@ dev-logs-auth:
 dev-logs-auth-verbose:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(AUTH_APP) --all-containers=true -f --tail=100 --max-log-requests=6
 
+dev-logs-init:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) -f --tail=100 -c init-migrate-seed
+
 dev-get-svc:
 	kubectl get svc -n $(NAMESPACE) -o wide
 
 dev-forward-port:
 	kubectl port-forward -n $(NAMESPACE) svc/$(NAMESPACE) 3000:3000
+
+dev-postgres-forward-port:
+	kubectl port-forward svc/database-service -n sales-system 5433:5432
 
 # ==============================================================================
 
