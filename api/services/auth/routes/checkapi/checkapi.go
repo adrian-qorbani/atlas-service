@@ -11,14 +11,8 @@ import (
 	"github.com/adrian-qorbani/atlas-service/business/sqldb"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
-	"github.com/go-json-experiment/json"
 	"github.com/jmoiron/sqlx"
 )
-
-// temp
-type status struct {
-	Status string
-}
 
 type api struct {
 	build string
@@ -33,11 +27,6 @@ func newAPI(build string, log *logger.Logger, db *sqlx.DB) *api {
 		db:    db,
 	}
 
-}
-
-func (s status) Encode() ([]byte, string, error) {
-	data, err := json.Marshal(s)
-	return data, "application/json", err
 }
 
 // readiness checks if the database is ready and if not will return a 500 status.
