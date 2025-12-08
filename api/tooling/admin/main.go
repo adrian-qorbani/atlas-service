@@ -13,8 +13,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/adrian-qorbani/atlas-service/business/sqldb"
-	"github.com/adrian-qorbani/atlas-service/business/sqldb/migrate"
+	"github.com/adrian-qorbani/atlas-service/business/api/migrate"
+	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/open-policy-agent/opa/rego"
 )

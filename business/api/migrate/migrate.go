@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/adrian-qorbani/atlas-service/business/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/ardanlabs/darwin/v3"
 	"github.com/ardanlabs/darwin/v3/dialects/postgres"
 	"github.com/ardanlabs/darwin/v3/drivers/generic"

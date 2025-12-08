@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/adrian-qorbani/atlas-service/business/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/jmoiron/sqlx"

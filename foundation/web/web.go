@@ -4,7 +4,6 @@ package web
 import (
 	"context"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,15 +26,13 @@ type Logger func(ctx context.Context, msg string, v ...any)
 type App struct {
 	log Logger
 	*http.ServeMux
-	shutdown chan os.Signal
-	mw       []MidFunc
+	mw []MidFunc
 }
 
 // NewApp creates an App value that handle a set of routes for the application.
-func NewApp(shutdown chan os.Signal, mw ...MidFunc) *App {
+func NewApp(log Logger, mw ...MidFunc) *App {
 	return &App{
 		ServeMux: http.NewServeMux(),
-		shutdown: shutdown,
 		mw:       mw,
 	}
 }

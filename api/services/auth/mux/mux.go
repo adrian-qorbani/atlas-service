@@ -3,7 +3,7 @@
 package mux
 
 import (
-	"os"
+	"context"
 
 	"github.com/adrian-qorbani/atlas-service/api/services/api/middleware"
 	"github.com/adrian-qorbani/atlas-service/api/services/auth/routes/authapi"
@@ -15,8 +15,13 @@ import (
 )
 
 // WebAPI constructs a http.Handler with all application routes bound.
-func WebAPI(build string, log *logger.Logger, db *sqlx.DB, auth *auth.Auth, shutdown chan os.Signal) *web.App {
-	app := web.NewApp(shutdown, middleware.Logger(log), middleware.Errors(log), middleware.Metrics(), middleware.Panics())
+func WebAPI(build string, log *logger.Logger, db *sqlx.DB, auth *auth.Auth) *web.App {
+
+	logger := func(ctx context.Context, msg string, v ...any) {
+		log.Info(ctx, msg, v...)
+	}
+
+	app := web.NewApp(logger, middleware.Logger(log), middleware.Errors(log), middleware.Metrics(), middleware.Panics())
 	checkapi.Routes(build, app, log, db)
 	authapi.Routes(app, auth)
 	return app

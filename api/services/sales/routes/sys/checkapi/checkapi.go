@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
-	"github.com/adrian-qorbani/atlas-service/business/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/go-json-experiment/json"

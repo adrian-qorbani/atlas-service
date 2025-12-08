@@ -15,7 +15,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/api/services/api/debug"
 	"github.com/adrian-qorbani/atlas-service/api/services/sales/mux"
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
-	"github.com/adrian-qorbani/atlas-service/business/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/ardanlabs/conf/v3"
@@ -157,7 +157,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      mux.WebAPI(build, log, db, authClient, shutdown),
+		Handler:      mux.WebAPI(build, log, db, authClient),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,
