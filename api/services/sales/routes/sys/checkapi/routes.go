@@ -2,8 +2,8 @@ package checkapi
 
 import (
 	"github.com/adrian-qorbani/atlas-service/api/services/api/middleware"
+	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
-	"github.com/adrian-qorbani/atlas-service/business/api/auth"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 	"github.com/jmoiron/sqlx"

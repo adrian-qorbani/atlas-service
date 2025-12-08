@@ -5,10 +5,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
 	"github.com/adrian-qorbani/atlas-service/app/api/middleware"
-	"github.com/adrian-qorbani/atlas-service/business/api/auth"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
 

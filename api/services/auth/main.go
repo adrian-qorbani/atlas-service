@@ -15,7 +15,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/api/services/api/debug"
 	"github.com/adrian-qorbani/atlas-service/api/services/auth/mux"
 
-	"github.com/adrian-qorbani/atlas-service/business/api/auth"
+	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/adrian-qorbani/atlas-service/foundation/keystore"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"

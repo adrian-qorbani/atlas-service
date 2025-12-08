@@ -1,7 +1,7 @@
 package authclient
 
 import (
-	"github.com/adrian-qorbani/atlas-service/business/api/auth"
+	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/google/uuid"
 )
 

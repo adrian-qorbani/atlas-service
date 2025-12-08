@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
-	"github.com/adrian-qorbani/atlas-service/business/api/auth"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
