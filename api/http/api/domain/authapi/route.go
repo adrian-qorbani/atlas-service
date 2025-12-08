@@ -2,7 +2,7 @@
 package authapi
 
 import (
-	"github.com/adrian-qorbani/atlas-service/api/services/api/middleware"
+	"github.com/adrian-qorbani/atlas-service/api/http/api/middleware"
 	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
