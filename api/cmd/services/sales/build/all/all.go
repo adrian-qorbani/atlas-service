@@ -3,6 +3,7 @@ package all
 
 import (
 	"github.com/adrian-qorbani/atlas-service/api/http/api/domain/checkapi"
+	"github.com/adrian-qorbani/atlas-service/api/http/api/domain/testapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/mux"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
@@ -21,5 +22,10 @@ func (add) Add(app *web.App, cfg mux.Config) {
 		Build: cfg.Build,
 		Log:   cfg.Log,
 		DB:    cfg.DB,
+	})
+
+	testapi.Routes(app, testapi.Config{
+		Log:        cfg.Log,
+		AuthClient: cfg.AuthClient,
 	})
 }
