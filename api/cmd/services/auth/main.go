@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/adrian-qorbani/atlas-service/api/cmd/services/auth/build/all"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/debug"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/mux"
 
@@ -178,9 +179,16 @@ func run(ctx context.Context, log *logger.Logger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
+	cfgMux := mux.Config{
+		Build: build,
+		Log:   log,
+		Auth:  ath,
+		DB:    db,
+	}
+
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      mux.WebAPIAuth(build, log, db, ath),
+		Handler:      mux.WebAPI(cfgMux, all.Routes()),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,

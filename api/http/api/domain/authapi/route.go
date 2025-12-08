@@ -7,13 +7,18 @@ import (
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
 
+// Config contains all the mandatory systems required by handlers.
+type Config struct {
+	Auth *auth.Auth
+}
+
 // Routes adds specific routes for this group.
-func Routes(app *web.App, ath *auth.Auth) {
+func Routes(app *web.App, cfg Config) {
 
-	bearer := middleware.Bearer(ath)
-	basic := middleware.Basic(ath)
+	bearer := middleware.Bearer(cfg.Auth)
+	basic := middleware.Basic(cfg.Auth)
 
-	api := newAPI(ath)
+	api := newAPI(cfg.Auth)
 
 	app.HandleFunc("GET /auth/token/{kid}", api.token, basic)
 	app.HandleFunc("GET /auth/authenticate", api.authenticate, bearer)
