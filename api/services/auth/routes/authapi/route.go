@@ -8,12 +8,15 @@ import (
 )
 
 // Routes adds specific routes for this group.
-func Routes(app *web.App, a *auth.Auth) {
-	authen := middleware.Authorization(a)
+func Routes(app *web.App, ath *auth.Auth) {
 
-	api := newAPI(a)
-	app.HandleFunc("GET /auth/token/{kid}", api.token, authen)
-	app.HandleFunc("GET /auth/authenticate", api.authenticate, authen)
+	bearer := middleware.Bearer(ath)
+	basic := middleware.Basic(ath)
+
+	api := newAPI(ath)
+
+	app.HandleFunc("GET /auth/token/{kid}", api.token, basic)
+	app.HandleFunc("GET /auth/authenticate", api.authenticate, bearer)
 	app.HandleFunc("POST /auth/authorize", api.authorize)
 
 }

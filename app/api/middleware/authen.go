@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/adrian-qorbani/atlas-service/app/api/auth"
@@ -27,49 +26,30 @@ func Authenticate(ctx context.Context, log *logger.Logger, client *authclient.Cl
 	return handler(ctx)
 }
 
-// Authorization validates a JWT from 'Authorization' header
-func Authorization(ctx context.Context, auth *auth.Auth, authorization string, handler Handler) error {
-	var err error
-
-	parts := strings.Split(authorization, " ")
-
-	switch parts[0] {
-	case "Bearer":
-		ctx, err = processJWT(ctx, auth, authorization)
-	case "Basic":
-		ctx, err = processBasic(ctx)
-	}
-
+// Bearer processes JWT authentication logic.
+func Bearer(ctx context.Context, ath *auth.Auth, authorization string, handler Handler) error {
+	claims, err := ath.Authenticate(ctx, authorization)
 	if err != nil {
-		return err
-	}
-
-	return handler(ctx)
-}
-
-func processJWT(ctx context.Context, auth *auth.Auth, token string) (context.Context, error) {
-	claims, err := auth.Authenticate(ctx, token)
-	if err != nil {
-		return ctx, errs.New(errs.Unauthenticated, err)
+		return errs.New(errs.Unauthenticated, err)
 	}
 
 	if claims.Subject == "" {
-		return ctx, errs.Newf(errs.Unauthenticated, "no claims: youre not authorized for this action.")
+		return errs.Newf(errs.Unauthenticated, "authorize: you are not authorized for that action, no claims")
 	}
 
 	subjectID, err := uuid.Parse(claims.Subject)
 	if err != nil {
-		return ctx, errs.New(errs.Unauthenticated, fmt.Errorf("parsing subject: %w", err))
+		return errs.New(errs.Unauthenticated, fmt.Errorf("parsing subject: %w", err))
 	}
 
 	ctx = setUserID(ctx, subjectID)
 	ctx = setClaims(ctx, claims)
 
-	return ctx, nil
+	return handler(ctx)
 }
 
 // Basic processes basic authentication logic.
-func processBasic(ctx context.Context) (context.Context, error) {
+func Basic(ctx context.Context, handler Handler) error {
 	claims := auth.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "3152420d-c05e-419e-a42a-7e5eb1151cac", //-to-do
@@ -82,13 +62,13 @@ func processBasic(ctx context.Context) (context.Context, error) {
 
 	subjectID, err := uuid.Parse(claims.Subject)
 	if err != nil {
-		return ctx, errs.Newf(errs.Unauthenticated, "parsing subject: %s", err)
+		return errs.Newf(errs.Unauthenticated, "parsing subject: %s", err)
 	}
 
 	ctx = setUserID(ctx, subjectID)
 	ctx = setClaims(ctx, claims)
 
-	return ctx, nil
+	return handler(ctx)
 }
 
 // func parseBasicAuth(auth string) (string, string, bool) {
@@ -108,4 +88,25 @@ func processBasic(ctx context.Context) (context.Context, error) {
 // 	}
 
 // 	return username, password, true
+// }
+
+// func processJWT(ctx context.Context, auth *auth.Auth, token string) (context.Context, error) {
+// 	claims, err := auth.Authenticate(ctx, token)
+// 	if err != nil {
+// 		return ctx, errs.New(errs.Unauthenticated, err)
+// 	}
+
+// 	if claims.Subject == "" {
+// 		return ctx, errs.Newf(errs.Unauthenticated, "no claims: youre not authorized for this action.")
+// 	}
+
+// 	subjectID, err := uuid.Parse(claims.Subject)
+// 	if err != nil {
+// 		return ctx, errs.New(errs.Unauthenticated, fmt.Errorf("parsing subject: %w", err))
+// 	}
+
+// 	ctx = setUserID(ctx, subjectID)
+// 	ctx = setClaims(ctx, claims)
+
+// 	return ctx, nil
 // }
