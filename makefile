@@ -242,6 +242,10 @@ admin-pvt-key:
 # user token:
 # export TOKEN=eyJhbGciOiJSUzI1NiIsImtpZCI6IjdmN2I4OTkzLWYyZDYtNDJmOS1hMGU4LTFjMmVmMTZjNTRjZCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzZXJ2aWNlIHByb2plY3QiLCJzdWIiOiIzMTUyNDIwZC1jMDVlLTQxOWUtYTQyYS03ZTVlYjExNTFjYWMiLCJleHAiOjE3OTQ0NjI2NTUsImlhdCI6MTc2MjkyNjY1NSwiUm9sZXMiOlsiVVNFUiJdfQ.rsn-FrVhwkA4FnYf4cD4HlqA_JP62XWKTFeMhElIDdRvmxgN-NObgbJjk_yWhxmrg8ID9Q_OkEI0D2gRM60IuOi_k6JWwxVpgjwlT_AI_iNpVrMA42NGa5MxYwfltTuVanbtZvd0D_pi-UfksnjdHMQqVPkDzZK6qWtyD_FvsLYFY7OUnydDwG1ay3hi5FU1CO9c63KF1T_X2l7kOSIvpDyi72sxqYBrK-wCwGyK_4H2hMH6gcdKtb6nG3-qtNKGpJWflFszGPOTtDMSqbiBGrbIkXC0NKB1KvEHsitjmVCV3lfk3DdhRuxKtgCFqxZOD59k6w9I258nxybvyXOAgw
 
+users:
+	curl -il \
+	-H "Authorization: Bearer ${TOKEN}" "http://localhost:3000/users?page=1&rows=2"
+
 curl-auth:
 	curl -il \
 	-H "Authorization: Bearer ${TOKEN}" "http://localhost:3000/testauth"
