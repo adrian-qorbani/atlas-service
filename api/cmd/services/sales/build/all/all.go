@@ -5,6 +5,9 @@ import (
 	"github.com/adrian-qorbani/atlas-service/api/http/api/domain/checkapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/domain/testapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/mux"
+	"github.com/adrian-qorbani/atlas-service/api/http/domain/userapi"
+	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/userbus/store/userdb"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
 )
 
@@ -18,6 +21,9 @@ type add struct{}
 
 // Add implements the RouterAdder interface.
 func (add) Add(app *web.App, cfg mux.Config) {
+
+	userBus := userbus.NewBusiness(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB))
+
 	checkapi.Routes(app, checkapi.Config{
 		Build: cfg.Build,
 		Log:   cfg.Log,
@@ -26,6 +32,12 @@ func (add) Add(app *web.App, cfg mux.Config) {
 
 	testapi.Routes(app, testapi.Config{
 		Log:        cfg.Log,
+		AuthClient: cfg.AuthClient,
+	})
+
+	userapi.Routes(app, userapi.Config{
+		Log:        cfg.Log,
+		UserBus:    userBus,
 		AuthClient: cfg.AuthClient,
 	})
 }
