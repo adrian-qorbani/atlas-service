@@ -1,10 +1,8 @@
 # Atlas Service
 
-**Atlas Service** is a Data-oriented domain-driven production-grade Go backend project designed to explore real-world service architecture, authentication, observability, and Kubernetes-based deployment.
+**Atlas Service** is a data-oriented domain-driven production-grade Go backend project designed to explore real-world service architecture, authentication, observability, and Kubernetes-based deployment.
 
 The project demonstrates how modern Go services are structured, secured, observed, and deployed in a distributed environment. It is built as a learning project with Ardan Labs’ *Service* architecture and practices guidance.
-
----
 
 ## 📦 Tech Stack
 
