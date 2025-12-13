@@ -5,7 +5,10 @@ import (
 	"github.com/adrian-qorbani/atlas-service/api/http/api/domain/checkapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/domain/testapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/api/mux"
+	"github.com/adrian-qorbani/atlas-service/api/http/domain/homeapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/domain/userapi"
+	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/homebus/stores/homedb"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus/store/userdb"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
@@ -23,6 +26,7 @@ type add struct{}
 func (add) Add(app *web.App, cfg mux.Config) {
 
 	userBus := userbus.NewBusiness(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB))
+	homeBus := homebus.NewBusiness(cfg.Log, userBus, homedb.NewStore(cfg.Log, cfg.DB))
 
 	checkapi.Routes(app, checkapi.Config{
 		Build: cfg.Build,
@@ -38,6 +42,13 @@ func (add) Add(app *web.App, cfg mux.Config) {
 	userapi.Routes(app, userapi.Config{
 		Log:        cfg.Log,
 		UserBus:    userBus,
+		AuthClient: cfg.AuthClient,
+	})
+
+	homeapi.Routes(app, homeapi.Config{
+		Log:        cfg.Log,
+		UserBus:    userBus,
+		HomeBus:    homeBus,
 		AuthClient: cfg.AuthClient,
 	})
 }
