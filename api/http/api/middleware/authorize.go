@@ -7,6 +7,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/app/api/middleware"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
@@ -59,6 +60,26 @@ func AuthorizeHome(log *logger.Logger, client *authclient.Client, homeBus *homeb
 			}
 
 			return middleware.AuthorizeHome(ctx, log, client, homeBus, web.Param(r, "home_id"), hdl)
+		}
+
+		return h
+	}
+
+	return m
+}
+
+// AuthorizeProduct executes the specified role and extracts the specified
+// product from the DB if a product id is specified in the call. Depending on
+// the rule specified, the userid from the claims may be compared with the
+// specified user id from the product.
+func AuthorizeProduct(log *logger.Logger, client *authclient.Client, productBus *productbus.Business) web.MidFunc {
+	m := func(handler web.HandlerFunc) web.HandlerFunc {
+		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			hdl := func(ctx context.Context) error {
+				return handler(ctx, w, r)
+			}
+
+			return middleware.AuthorizeProduct(ctx, log, client, productBus, web.Param(r, "product_id"), hdl)
 		}
 
 		return h

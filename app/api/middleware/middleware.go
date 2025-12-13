@@ -6,6 +6,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/app/api/auth"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/google/uuid"
 )
@@ -20,6 +21,7 @@ const (
 	userIDKey
 	userKey
 	homeKey
+	productKey
 )
 
 func setClaims(ctx context.Context, claims auth.Claims) context.Context {
@@ -75,4 +77,18 @@ func GetHome(ctx context.Context) (homebus.Home, error) {
 	}
 
 	return v, nil
+}
+
+// GetProduct returns the product from the context.
+func GetProduct(ctx context.Context) (productbus.Product, error) {
+	v, ok := ctx.Value(productKey).(productbus.Product)
+	if !ok {
+		return productbus.Product{}, errors.New("product not found in context")
+	}
+
+	return v, nil
+}
+
+func setProduct(ctx context.Context, prd productbus.Product) context.Context {
+	return context.WithValue(ctx, productKey, prd)
 }

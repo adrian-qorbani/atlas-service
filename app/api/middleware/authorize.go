@@ -8,6 +8,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/app/api/errs"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/google/uuid"
@@ -107,6 +108,47 @@ func AuthorizeHome(ctx context.Context, log *logger.Logger, client *authclient.C
 	auth := authclient.Authorize{
 		Claims: GetClaims(ctx),
 		UserID: userID,
+		Rule:   auth.RuleAdminOrSubject,
+	}
+
+	if err := client.Authorize(ctx, auth); err != nil {
+		return errs.New(errs.Unauthenticated, err)
+	}
+
+	return handler(ctx)
+}
+
+// AuthorizeProduct executes the specified role and extracts the specified
+// product from the DB if a product id is specified in the call. Depending on
+// the rule specified, the userid from the claims may be compared with the
+// specified user id from the product.
+func AuthorizeProduct(ctx context.Context, log *logger.Logger, client *authclient.Client, productBus *productbus.Business, id string, handler Handler) error {
+	var userID uuid.UUID
+
+	if id != "" {
+		var err error
+		productID, err := uuid.Parse(id)
+		if err != nil {
+			return errs.New(errs.Unauthenticated, ErrInvalidID)
+		}
+
+		prd, err := productBus.QueryByID(ctx, productID)
+		if err != nil {
+			switch {
+			case errors.Is(err, productbus.ErrNotFound):
+				return errs.New(errs.Unauthenticated, err)
+			default:
+				return errs.Newf(errs.Internal, "querybyid: productID[%s]: %s", productID, err)
+			}
+		}
+
+		userID = prd.UserID
+		ctx = setProduct(ctx, prd)
+	}
+
+	auth := authclient.Authorize{
+		UserID: userID,
+		Claims: GetClaims(ctx),
 		Rule:   auth.RuleAdminOrSubject,
 	}
 
