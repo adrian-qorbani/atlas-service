@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/adrian-qorbani/atlas-service/app/api/auth"
+	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/google/uuid"
 )
@@ -18,6 +19,7 @@ const (
 	claimKey ctxKey = iota + 1
 	userIDKey
 	userKey
+	homeKey
 )
 
 func setClaims(ctx context.Context, claims auth.Claims) context.Context {
@@ -56,6 +58,20 @@ func GetUser(ctx context.Context) (userbus.User, error) {
 	v, ok := ctx.Value(userKey).(userbus.User)
 	if !ok {
 		return userbus.User{}, errors.New("user not found in context")
+	}
+
+	return v, nil
+}
+
+func setHome(ctx context.Context, hme homebus.Home) context.Context {
+	return context.WithValue(ctx, homeKey, hme)
+}
+
+// GetHome returns the home from the context.
+func GetHome(ctx context.Context) (homebus.Home, error) {
+	v, ok := ctx.Value(homeKey).(homebus.Home)
+	if !ok {
+		return homebus.Home{}, errors.New("home not found in context")
 	}
 
 	return v, nil

@@ -6,6 +6,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/app/api/authclient"
 	"github.com/adrian-qorbani/atlas-service/app/api/middleware"
+	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
@@ -38,6 +39,26 @@ func AuthorizeUser(log *logger.Logger, client *authclient.Client, userBus *userb
 			}
 
 			return middleware.AuthorizeUser(ctx, log, client, userBus, rule, web.Param(r, "user_id"), hdl)
+		}
+
+		return h
+	}
+
+	return m
+}
+
+// AuthorizeHome executes the specified role and extracts the specified
+// home from the DB if a home id is specified in the call. Depending on
+// the rule specified, the userid from the claims may be compared with the
+// specified user id from the home.
+func AuthorizeHome(log *logger.Logger, client *authclient.Client, homeBus *homebus.Business) web.MidFunc {
+	m := func(handler web.HandlerFunc) web.HandlerFunc {
+		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			hdl := func(ctx context.Context) error {
+				return handler(ctx, w, r)
+			}
+
+			return middleware.AuthorizeHome(ctx, log, client, homeBus, web.Param(r, "home_id"), hdl)
 		}
 
 		return h
