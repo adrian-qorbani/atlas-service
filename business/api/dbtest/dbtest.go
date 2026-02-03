@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/api/migrate"
 	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
@@ -52,7 +53,8 @@ type BusDomain struct {
 }
 
 func newBusDomains(log *logger.Logger, db *sqlx.DB) BusDomain {
-	userBus := userbus.NewBusiness(log, userdb.NewStore(log, db))
+	delegate := delegate.New(log)
+	userBus := userbus.NewBusiness(log, delegate, userdb.NewStore(log, db))
 
 	return BusDomain{
 		User: userBus,
