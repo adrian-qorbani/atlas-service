@@ -8,6 +8,7 @@ import (
 	"net/mail"
 	"time"
 
+	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/api/order"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/google/uuid"
@@ -36,15 +37,17 @@ type Storer interface {
 
 // Business manages the set of APIs for user access.
 type Business struct {
-	log    *logger.Logger
-	storer Storer
+	log      *logger.Logger
+	storer   Storer
+	delegate *delegate.Delegate
 }
 
 // NewBusiness constructs a user business API for use.
-func NewBusiness(log *logger.Logger, storer Storer) *Business {
+func NewBusiness(log *logger.Logger, delegate *delegate.Delegate, storer Storer) *Business {
 	return &Business{
-		log:    log,
-		storer: storer,
+		log:      log,
+		delegate: delegate,
+		storer:   storer,
 	}
 }
 
@@ -118,6 +121,12 @@ func (b *Business) Update(ctx context.Context, usr User, uu UpdateUser) (User, e
 func (b *Business) Delete(ctx context.Context, usr User) error {
 	if err := b.storer.Delete(ctx, usr); err != nil {
 		return fmt.Errorf("delete: %w", err)
+	}
+
+	// Other domains may need to know when a user is deleted so business
+	// logic can be applied. This represents a delegate call to other domains.
+	if err := b.delegate.Call(ctx, ActionDeletedData(usr.ID)); err != nil {
+		return fmt.Errorf("failed to execute `%s` action: %w", ActionDeleted, err)
 	}
 
 	return nil
