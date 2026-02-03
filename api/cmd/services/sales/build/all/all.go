@@ -9,6 +9,7 @@ import (
 	"github.com/adrian-qorbani/atlas-service/api/http/domain/productapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/domain/userapi"
 	"github.com/adrian-qorbani/atlas-service/api/http/domain/vproductapi"
+	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus/stores/homedb"
 	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
@@ -31,7 +32,10 @@ type add struct{}
 // Add implements the RouterAdder interface.
 func (add) Add(app *web.App, cfg mux.Config) {
 
-	userBus := userbus.NewBusiness(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB))
+	// Construct the business domain packages we need here so we are using the
+	// sames instances for the different set of domain apis.
+	delegate := delegate.New(cfg.Log)
+	userBus := userbus.NewBusiness(cfg.Log, delegate, userdb.NewStore(cfg.Log, cfg.DB))
 	homeBus := homebus.NewBusiness(cfg.Log, userBus, homedb.NewStore(cfg.Log, cfg.DB))
 	productBus := productbus.NewBusiness(cfg.Log, userBus, productdb.NewStore(cfg.Log, cfg.DB))
 	vproductBus := vproductbus.NewBusiness(vproductdb.NewStore(cfg.Log, cfg.DB))
