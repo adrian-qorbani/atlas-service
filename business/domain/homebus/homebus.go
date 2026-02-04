@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/api/order"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
@@ -33,17 +34,19 @@ type Storer interface {
 
 // Business manages the set of APIs for home api access.
 type Business struct {
-	log     *logger.Logger
-	userBus *userbus.Business
-	storer  Storer
+	log      *logger.Logger
+	userBus  *userbus.Business
+	delegate *delegate.Delegate
+	storer   Storer
 }
 
 // NewBusiness constructs a home business API for use.
-func NewBusiness(log *logger.Logger, userBus *userbus.Business, storer Storer) *Business {
+func NewBusiness(log *logger.Logger, userBus *userbus.Business, delegate *delegate.Delegate, storer Storer) *Business {
 	return &Business{
-		log:     log,
-		userBus: userBus,
-		storer:  storer,
+		log:      log,
+		userBus:  userBus,
+		delegate: delegate,
+		storer:   storer,
 	}
 }
 
