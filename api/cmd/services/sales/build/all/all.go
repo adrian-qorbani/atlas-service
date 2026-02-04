@@ -36,8 +36,8 @@ func (add) Add(app *web.App, cfg mux.Config) {
 	// sames instances for the different set of domain apis.
 	delegate := delegate.New(cfg.Log)
 	userBus := userbus.NewBusiness(cfg.Log, delegate, userdb.NewStore(cfg.Log, cfg.DB))
-	homeBus := homebus.NewBusiness(cfg.Log, userBus, homedb.NewStore(cfg.Log, cfg.DB))
-	productBus := productbus.NewBusiness(cfg.Log, userBus, productdb.NewStore(cfg.Log, cfg.DB))
+	homeBus := homebus.NewBusiness(cfg.Log, userBus, delegate, homedb.NewStore(cfg.Log, cfg.DB))
+	productBus := productbus.NewBusiness(cfg.Log, userBus, delegate, productdb.NewStore(cfg.Log, cfg.DB))
 	vproductBus := vproductbus.NewBusiness(vproductdb.NewStore(cfg.Log, cfg.DB))
 
 	checkapi.Routes(app, checkapi.Config{
