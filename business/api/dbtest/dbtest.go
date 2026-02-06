@@ -12,8 +12,14 @@ import (
 	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/api/migrate"
 	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/homebus/stores/homedb"
+	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/productbus/stores/productdb"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus/store/userdb"
+	"github.com/adrian-qorbani/atlas-service/business/domain/vproductbus"
+	"github.com/adrian-qorbani/atlas-service/business/domain/vproductbus/stores/vproductdb"
 	"github.com/adrian-qorbani/atlas-service/foundation/docker"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/adrian-qorbani/atlas-service/foundation/web"
@@ -49,15 +55,26 @@ func StopDB(c *docker.Container) {
 
 // BusDomain represents all the business domain apis needed for testing.
 type BusDomain struct {
-	User *userbus.Business
+	Delegate *delegate.Delegate
+	Home     *homebus.Business
+	Product  *productbus.Business
+	User     *userbus.Business
+	VProduct *vproductbus.Business
 }
 
 func newBusDomains(log *logger.Logger, db *sqlx.DB) BusDomain {
 	delegate := delegate.New(log)
 	userBus := userbus.NewBusiness(log, delegate, userdb.NewStore(log, db))
+	productBus := productbus.NewBusiness(log, userBus, delegate, productdb.NewStore(log, db))
+	homeBus := homebus.NewBusiness(log, userBus, delegate, homedb.NewStore(log, db))
+	vproductBus := vproductbus.NewBusiness(vproductdb.NewStore(log, db))
 
 	return BusDomain{
-		User: userBus,
+		Delegate: delegate,
+		Home:     homeBus,
+		Product:  productBus,
+		User:     userBus,
+		VProduct: vproductBus,
 	}
 }
 
