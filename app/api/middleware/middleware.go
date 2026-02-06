@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/adrian-qorbani/atlas-service/app/api/auth"
+	"github.com/adrian-qorbani/atlas-service/business/api/transaction"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
@@ -22,6 +23,7 @@ const (
 	userKey
 	homeKey
 	productKey
+	trKey
 )
 
 func setClaims(ctx context.Context, claims auth.Claims) context.Context {
@@ -91,4 +93,15 @@ func GetProduct(ctx context.Context) (productbus.Product, error) {
 
 func setProduct(ctx context.Context, prd productbus.Product) context.Context {
 	return context.WithValue(ctx, productKey, prd)
+}
+
+// SetTran sets the value that can manage a transaction.
+func setTran(ctx context.Context, tx transaction.CommitRollbacker) context.Context {
+	return context.WithValue(ctx, trKey, tx)
+}
+
+// GetTran retrieves the value that can manage a transaction.
+func GetTran(ctx context.Context) (transaction.CommitRollbacker, bool) {
+	v, ok := ctx.Value(trKey).(transaction.CommitRollbacker)
+	return v, ok
 }
