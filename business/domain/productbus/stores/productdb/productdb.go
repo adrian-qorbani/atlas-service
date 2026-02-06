@@ -9,6 +9,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/business/api/order"
 	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/api/transaction"
 	"github.com/adrian-qorbani/atlas-service/business/domain/productbus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/google/uuid"
@@ -27,6 +28,22 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 		log: log,
 		db:  db,
 	}
+}
+
+// NewWithTx constructs a new Store value replacing the sqlx DB
+// value with a sqlx DB value that is currently inside a transaction.
+func (s *Store) NewWithTx(tx transaction.CommitRollbacker) (productbus.Storer, error) {
+	ec, err := sqldb.GetExtContext(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	store := Store{
+		log: s.log,
+		db:  ec,
+	}
+
+	return &store, nil
 }
 
 // Create adds a Product to the sqldb. It returns the created Product with

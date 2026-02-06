@@ -10,6 +10,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/api/order"
+	"github.com/adrian-qorbani/atlas-service/business/api/transaction"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -25,6 +26,7 @@ var (
 // Storer interface declares the behavior this package needs to perists and
 // retrieve data.
 type Storer interface {
+	NewWithTx(tx transaction.CommitRollbacker) (Storer, error)
 	Create(ctx context.Context, usr User) error
 	Update(ctx context.Context, usr User) error
 	Delete(ctx context.Context, usr User) error
@@ -49,6 +51,23 @@ func NewBusiness(log *logger.Logger, delegate *delegate.Delegate, storer Storer)
 		delegate: delegate,
 		storer:   storer,
 	}
+}
+
+// NewWithTx constructs a new business value that will use the
+// specified transaction in any store related calls.
+func (b *Business) NewWithTx(tx transaction.CommitRollbacker) (*Business, error) {
+	storer, err := b.storer.NewWithTx(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	bus := Business{
+		log:      b.log,
+		delegate: b.delegate,
+		storer:   storer,
+	}
+
+	return &bus, nil
 }
 
 // Create adds a new user to the system.

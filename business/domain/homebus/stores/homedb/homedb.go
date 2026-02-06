@@ -9,6 +9,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/business/api/order"
 	"github.com/adrian-qorbani/atlas-service/business/api/sqldb"
+	"github.com/adrian-qorbani/atlas-service/business/api/transaction"
 	"github.com/adrian-qorbani/atlas-service/business/domain/homebus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/google/uuid"
@@ -27,6 +28,22 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 		log: log,
 		db:  db,
 	}
+}
+
+// NewWithTx constructs a new Store value replacing the sqlx DB
+// value with a sqlx DB value that is currently inside a transaction.
+func (s *Store) NewWithTx(tx transaction.CommitRollbacker) (homebus.Storer, error) {
+	ec, err := sqldb.GetExtContext(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	store := Store{
+		log: s.log,
+		db:  ec,
+	}
+
+	return &store, nil
 }
 
 // Create inserts a new home into the database.

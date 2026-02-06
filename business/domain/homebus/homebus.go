@@ -9,6 +9,7 @@ import (
 
 	"github.com/adrian-qorbani/atlas-service/business/api/delegate"
 	"github.com/adrian-qorbani/atlas-service/business/api/order"
+	"github.com/adrian-qorbani/atlas-service/business/api/transaction"
 	"github.com/adrian-qorbani/atlas-service/business/domain/userbus"
 	"github.com/adrian-qorbani/atlas-service/foundation/logger"
 	"github.com/google/uuid"
@@ -23,6 +24,7 @@ var (
 // Storer interface declares the behaviour this package needs to persist and
 // retrieve data.
 type Storer interface {
+	NewWithTx(tx transaction.CommitRollbacker) (Storer, error)
 	Create(ctx context.Context, hme Home) error
 	Update(ctx context.Context, hme Home) error
 	Delete(ctx context.Context, hme Home) error
@@ -48,6 +50,29 @@ func NewBusiness(log *logger.Logger, userBus *userbus.Business, delegate *delega
 		delegate: delegate,
 		storer:   storer,
 	}
+}
+
+// NewWithTx constructs a new domain value that will use the
+// specified transaction in any store related calls.
+func (b *Business) NewWithTx(tx transaction.CommitRollbacker) (*Business, error) {
+	storer, err := b.storer.NewWithTx(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	userBus, err := b.userBus.NewWithTx(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	bus := Business{
+		log:      b.log,
+		userBus:  userBus,
+		delegate: b.delegate,
+		storer:   storer,
+	}
+
+	return &bus, nil
 }
 
 // Create adds a new home to the system.
