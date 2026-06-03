@@ -32,7 +32,7 @@ func Routes(app *web.App, cfg Config) {
 	app.HandleFunc("GET /homes/{home_id}", api.queryByID, authen, ruleAuthorizeHome)
 	app.HandleFunc("POST /homes", api.create, authen, ruleUserOnly)
 	app.HandleFunc("PUT /homes/{home_id}", api.update, authen, ruleAuthorizeHome)
-	app.HandleFunc("PUT /homes/{home_id}", api.delete, authen, ruleAuthorizeHome)
+	app.HandleFunc("DELETE /homes/{home_id}", api.delete, authen, ruleAuthorizeHome)
 
 	// 	app.HandleFunc("GET /users", api.query, authen, ruleAdmin)
 	// app.HandleFunc("GET /users/{user_id}", api.queryByID, authen, ruleAuthorizeUser)
