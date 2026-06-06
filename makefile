@@ -46,6 +46,10 @@ SALES_IMAGE     := $(BASE_IMAGE_NAME)/$(SALES_APP):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
 AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
 
+# ENV (IMPORTANT: Should be secret in real projects!)
+DB_USER         := postgres
+DB_PASS         := postgres
+
 # VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
 # ==============================================================================
@@ -95,9 +99,11 @@ auth:
 # ==============================================================================
 # Administration
 
-pgcli:
-	pgcli postgresql://postgres:postgres@localhost
+dev-db:
+	kubectl port-forward svc/database-service -n sales-system 5433:5432 & sleep 1 && pgcli postgresql://$(DB_USER):$(DB_PASS)@localhost:5433/postgres
 
+dev-db-stop:
+	-pkill -f "port-forward svc/database-service"
 # ==============================================================================
 # module support
 tidy:
@@ -113,8 +119,6 @@ dev-up:
 		--config zarf/k8s/dev/kind-config.yaml
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
-
-	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
 
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
@@ -141,6 +145,7 @@ dev-load:
 	kind load docker-image $(AUTH_IMAGE) --name $(KIND_CLUSTER) 
 
 dev-apply:
+
 	kustomize build zarf/k8s/dev/database | kubectl apply -f -
 	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
 	
@@ -149,12 +154,12 @@ dev-apply:
 
 	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(SALES_APP) --timeout=120s --for=condition=Ready
-
+	
 dev-restart:
 	kubectl rollout restart deployment $(AUTH_APP) --namespace=$(NAMESPACE)
 	kubectl rollout restart deployment $(SALES_APP) --namespace=$(NAMESPACE)
 
-dev-run: build dev-up dev-load dev-apply
+dev-run: build dev-up dev-load-db dev-load dev-apply
 
 dev-update: build dev-load dev-restart
 
