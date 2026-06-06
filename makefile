@@ -1,12 +1,12 @@
 # debug
 run:
-	go run api/services/sales/main.go | go run api/tooling/logfmt/main.go
+	go run api/services/sales/main.go | go run api/cmd/tooling/logfmt/main.go
 
 help:
-	go run api/services/sales/main.go --help
+	go run api/cmd/services/sales/main.go --help
 
 version:
-	go run api/services/sales/main.go --version
+	go run api/cmd/services/sales/main.go --version
 
 # temp
 curl-test-api:
@@ -166,13 +166,13 @@ dev-update: build dev-load dev-restart
 dev-update-apply: build dev-load dev-apply
 
 dev-logs-sales:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/tooling/logfmt/main.go -service=$(SALES_APP)
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/cmd/tooling/logfmt/main.go -service=$(SALES_APP)
 
 dev-logs-sales-verbose:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6
 
 dev-logs-auth:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(AUTH_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/tooling/logfmt/main.go -service=$(AUTH_APP)
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(AUTH_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run api/cmd/tooling/logfmt/main.go -service=$(AUTH_APP)
 
 dev-logs-auth-verbose:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(AUTH_APP) --all-containers=true -f --tail=100 --max-log-requests=6
