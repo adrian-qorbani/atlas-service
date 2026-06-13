@@ -1,3 +1,5 @@
+.PHONY: build sales auth client
+
 # debug
 run:
 	go run api/services/sales/main.go | go run api/cmd/tooling/logfmt/main.go
@@ -45,6 +47,8 @@ VERSION         := 0.0.1
 SALES_IMAGE     := $(BASE_IMAGE_NAME)/$(SALES_APP):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
 AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
+CLIENT_APP   	:= client
+CLIENT_IMAGE 	:= $(BASE_IMAGE_NAME)/$(CLIENT_APP):$(VERSION)
 
 # ENV (IMPORTANT: Should be secret in real projects!)
 DB_USER         := postgres
@@ -78,7 +82,7 @@ dev-docker:
 # ==============================================================================
 # building containers
 
-build: sales auth
+build: sales auth client
 
 sales:
 	docker build \
@@ -95,6 +99,14 @@ auth:
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
 		.
+
+client:
+	docker build \
+		-f client/Dockerfile \
+		-t $(CLIENT_IMAGE) \
+		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+		./client
+
 
 # ==============================================================================
 # Administration
@@ -140,12 +152,18 @@ dev-status:
 dev-load-db:
 	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
 
+dev-load-auth:
+	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
+
+dev-load-client:
+	kind load docker-image $(CLIENT_IMAGE) --name $(KIND_CLUSTER) 
+
 dev-load:
 	kind load docker-image $(SALES_IMAGE) --name $(KIND_CLUSTER)
-	kind load docker-image $(AUTH_IMAGE) --name $(KIND_CLUSTER) 
+	kind load docker-image $(AUTH_IMAGE) --name $(KIND_CLUSTER)
+	kind load docker-image $(CLIENT_IMAGE) --name $(KIND_CLUSTER) 
 
 dev-apply:
-
 	kustomize build zarf/k8s/dev/database | kubectl apply -f -
 	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
 	
@@ -154,10 +172,36 @@ dev-apply:
 
 	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(SALES_APP) --timeout=120s --for=condition=Ready
-	
+
+	kustomize build zarf/k8s/dev/client | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(CLIENT_APP) --timeout=120s --for=condition=Ready
+
+dev-apply-db:
+	kustomize build zarf/k8s/dev/database | kubectl apply -f -
+	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
+
+dev-apply-auth:
+	kustomize build zarf/k8s/dev/auth | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(AUTH_APP) --timeout=120s --for=condition=Ready
+
+dev-apply-sales:
+	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(SALES_APP) --timeout=120s --for=condition=Ready
+
+dev-apply-client:
+	kustomize build zarf/k8s/dev/client | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(CLIENT_APP) --timeout=120s --for=condition=Ready
+
 dev-restart:
 	kubectl rollout restart deployment $(AUTH_APP) --namespace=$(NAMESPACE)
 	kubectl rollout restart deployment $(SALES_APP) --namespace=$(NAMESPACE)
+	kubectl rollout restart deployment $(CLIENT_APP) --namespace=$(NAMESPACE)
+
+dev-restart-client:
+	kubectl rollout restart deployment $(CLIENT_APP) --namespace=$(NAMESPACE)
+
+dev-restart-auth:
+	kubectl rollout restart deployment $(AUTH_APP) --namespace=$(NAMESPACE)
 
 dev-run: build dev-up dev-load-db dev-load dev-apply
 
@@ -180,6 +224,9 @@ dev-logs-auth-verbose:
 dev-logs-init:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(SALES_APP) -f --tail=100 -c init-migrate-seed
 
+dev-logs-client:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(CLIENT_APP) --all-containers=true -f --tail=100
+
 dev-get-svc:
 	kubectl get svc -n $(NAMESPACE) -o wide
 
@@ -188,6 +235,20 @@ dev-forward-port:
 
 dev-postgres-forward-port:
 	kubectl port-forward svc/database-service -n sales-system 5433:5432
+
+dev-forward-client:
+	kubectl port-forward -n $(NAMESPACE) svc/client-service 3001:3001
+
+dev-forward-auth:
+	kubectl port-forward -n $(NAMESPACE) svc/auth-service 6100:6100
+
+dev-forward-sales:
+	kubectl port-forward -n $(NAMESPACE) svc/sales-service 3000:3000
+
+dev-forward-all:
+	kubectl port-forward -n $(NAMESPACE) svc/auth-service 6100:6100 &
+	kubectl port-forward -n $(NAMESPACE) svc/sales-service 3000:3000 &
+	kubectl port-forward -n $(NAMESPACE) svc/client-service 3001:3001 &
 
 # ==============================================================================
 
@@ -257,8 +318,8 @@ curl-auth:
 
 token:
 	curl -il \
-	--user "admin@example.com:gophers" http://localhost:6000/auth/token/7f7b8993-f2d6-42f9-a0e8-1c2ef16c54cd
+	--user "admin@example.com:gophers" http://localhost:6100/auth/token/7f7b8993-f2d6-42f9-a0e8-1c2ef16c54cd
 
 curl-auth2:
 	curl -il \
-	-H "Authorization: Bearer ${TOKEN}" "http://localhost:6000/auth/authenticate"
+	-H "Authorization: Bearer ${TOKEN}" "http://localhost:61000/auth/authenticate"
