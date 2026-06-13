@@ -68,9 +68,9 @@ func run(ctx context.Context, log *logger.Logger) error {
 			WriteTimeout       time.Duration `conf:"default:10s"`
 			IdleTimeout        time.Duration `conf:"default:120s"`
 			ShutdownTimeout    time.Duration `conf:"default:20s"`
-			APIHost            string        `conf:"default:0.0.0.0:6000"`
-			DebugHost          string        `conf:"default:0.0.0.0:6100"`
-			CORSAllowedOrigins []string      `conf:"default:*"`
+			APIHost            string        `conf:"default:0.0.0.0:6100"`
+			DebugHost          string        `conf:"default:0.0.0.0:6110"`
+			CORSAllowedOrigins []string      `conf:"default:*,mask"`
 		}
 		Auth struct {
 			KeysFolder string `conf:"default:zarf/keys/"`
@@ -180,10 +180,11 @@ func run(ctx context.Context, log *logger.Logger) error {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	cfgMux := mux.Config{
-		Build: build,
-		Log:   log,
-		Auth:  ath,
-		DB:    db,
+		Build:              build,
+		Log:                log,
+		Auth:               ath,
+		DB:                 db,
+		CORSAllowedOrigins: cfg.Web.CORSAllowedOrigins,
 	}
 
 	api := http.Server{
