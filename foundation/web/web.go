@@ -26,14 +26,16 @@ type Logger func(ctx context.Context, msg string, v ...any)
 type App struct {
 	log Logger
 	*http.ServeMux
-	mw []MidFunc
+	mw           []MidFunc
+	optionsPaths map[string]bool
 }
 
 // NewApp creates an App value that handle a set of routes for the application.
 func NewApp(log Logger, mw ...MidFunc) *App {
 	return &App{
-		ServeMux: http.NewServeMux(),
-		mw:       mw,
+		ServeMux:     http.NewServeMux(),
+		mw:           mw,
+		optionsPaths: make(map[string]bool),
 	}
 }
 
@@ -57,6 +59,25 @@ func (a *App) HandleFunc(pattern string, handlerFunc HandlerFunc, mw ...MidFunc)
 	}
 
 	a.ServeMux.HandleFunc(pattern, h)
+
+	// Register OPTIONS handler for CORS preflight
+	// Extract just the path without method prefix
+	path := extractPath(pattern)
+	optionsPattern := "OPTIONS " + path
+	if !a.optionsPaths[optionsPattern] {
+		a.optionsPaths[optionsPattern] = true
+		a.ServeMux.HandleFunc(optionsPattern, h)
+	}
+}
+
+// extractPath removes the HTTP method prefix from a pattern like "GET /users"
+func extractPath(pattern string) string {
+	for _, method := range []string{"GET ", "POST ", "PUT ", "DELETE ", "PATCH "} {
+		if len(pattern) > len(method) && pattern[:len(method)] == method {
+			return pattern[len(method):]
+		}
+	}
+	return pattern
 }
 
 // HandleFuncNoMiddleware sets a handler function for a given HTTP method and path pair
