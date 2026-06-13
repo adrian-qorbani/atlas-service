@@ -13,11 +13,12 @@ import (
 
 // Config contains all the mandatory systems required by handlers.
 type Config struct {
-	Build      string
-	Log        *logger.Logger
-	Auth       *auth.Auth
-	AuthClient *authclient.Client
-	DB         *sqlx.DB
+	Build              string
+	Log                *logger.Logger
+	Auth               *auth.Auth
+	AuthClient         *authclient.Client
+	DB                 *sqlx.DB
+	CORSAllowedOrigins []string
 }
 
 // RouteAdder defines behavior that sets the routes to bind for an instance
@@ -39,6 +40,7 @@ func WebAPI(cfg Config, routeAdder RouteAdder) *web.App {
 		middleware.Errors(cfg.Log),
 		middleware.Metrics(),
 		middleware.Panics(),
+		middleware.Cors(cfg.CORSAllowedOrigins),
 	)
 
 	routeAdder.Add(app, cfg)
