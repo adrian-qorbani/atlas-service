@@ -9,8 +9,8 @@ spec:
 
   ports:
   - name: auth
-    port: 6000
+    port: 6100
     targetPort: auth
   - name: auth-debug
-    port: 6010
+    port: 6110
     targetPort: auth-debug
