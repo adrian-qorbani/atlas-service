@@ -14,22 +14,29 @@ export default function LoginPage() {
   const [error, setError]       = useState<string | null>(null);
   const [loading, setLoading]   = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
+async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
+      console.log("Attempting login with KID:", DEFAULT_KID);
+      const url = `/proxy/auth/auth/token/${DEFAULT_KID}`;
+      console.log("Fetching URL:", url);
+      
       const token = await getToken(email, password, DEFAULT_KID);
+      console.log("Token received:", token.slice(0, 20) + "...");
 
-      await fetch("/api/auth/set-token", {
+      const cookieRes = await fetch("/api/auth/set-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
+      console.log("Cookie set response:", cookieRes.status);
 
       router.push("/dashboard");
     } catch (err) {
+      console.error("Login error:", err);
       const apiErr = err as APIError;
       setError(apiErr.error || "Login failed");
     } finally {

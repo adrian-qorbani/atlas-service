@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL:  process.env.NEXT_PUBLIC_API_URL  || "http://localhost:3000",
     NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:6000",
-    NEXT_PUBLIC_AUTH_KID: process.env.NEXT_PUBLIC_AUTH_KID || "54bb2165-71e1-41a6-af3e-7da4a0e1e2c1",
-  },
+    NEXT_PUBLIC_AUTH_KID: process.env.NEXT_PUBLIC_AUTH_KID || "7f7b8993-f2d6-42f9-a0e8-1c2ef16c54cd",
+  }
 };
 
 export default nextConfig;

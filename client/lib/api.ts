@@ -1,7 +1,7 @@
 import type { User, NewUser, UpdateUser, APIError } from "@/types";
 
 const API_URL  = process.env.NEXT_PUBLIC_API_URL  || "http://localhost:3000";
-const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:6000";
+const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:6200";
 
 async function apiFetch<T>(
   baseUrl: string,
@@ -28,6 +28,7 @@ async function apiFetch<T>(
 }
 
 export async function getToken(email: string, password: string, kid: string): Promise<string> {
+  console.log("get token init", email, password, kid)
   const credentials = btoa(`${email}:${password}`);
   const res = await fetch(`${AUTH_URL}/auth/token/${kid}`, {
     headers: { Authorization: `Basic ${credentials}` },
@@ -42,7 +43,7 @@ export async function getToken(email: string, password: string, kid: string): Pr
   return data.token;
 }
 
-export async function getUsers(token: string, page = 1, rows = 20): Promise<User[]> {
+export async function getUsers(token: string, page = 1, rows = 20): Promise<{ items: User[]; total: number; page: number; rowsPerPage: number }> {
   return apiFetch(API_URL, `/users?page=${page}&rows=${rows}`, {}, token);
 }
 

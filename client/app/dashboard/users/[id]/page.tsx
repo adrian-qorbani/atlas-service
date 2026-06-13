@@ -64,8 +64,8 @@ export default async function UserDetailPage({
         <Row label="Department" value={user.department || "—"} />
         <Row label="Roles"      value={user.roles?.join(", ") || "—"} />
         <Row label="Status"     value={user.enabled ? "Active" : "Disabled"} />
-        <Row label="Created"    value={new Date(user.date_created).toLocaleString()} />
-        <Row label="Updated"    value={new Date(user.date_updated).toLocaleString()} />
+        <Row label="Created" value={new Date(user.dateCreated).toLocaleString()} />
+        <Row label="Updated" value={new Date(user.dateUpdated).toLocaleString()} />
       </div>
 
     </div>

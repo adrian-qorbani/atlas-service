@@ -7,8 +7,8 @@ export interface User {
   roles: Role[];
   enabled: boolean;
   department: string;
-  date_created: string;
-  date_updated: string;
+  dateCreated: string;
+  dateUpdated: string;
 }
 
 export interface NewUser {

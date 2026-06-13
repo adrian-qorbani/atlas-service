@@ -10,11 +10,12 @@ export default async function UsersPage() {
   let users: User[] = [];
   let error: string | null = null;
 
-  try {
-    users = await getUsers(token, 1, 20);
-  } catch (err) {
-    error = (err as { error: string }).error || "Failed to load users";
-  }
+try {
+  const data = await getUsers(token, 1, 20);
+  users = (data as unknown as { items: User[] }).items ?? [];
+} catch (err) {
+  error = (err as { error: string }).error || "Failed to load users";
+}
 
   return (
     <div className="max-w-4xl">
